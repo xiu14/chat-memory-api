@@ -1,6 +1,6 @@
 import { auth } from '../firebase';
 import { message } from 'antd';
-import { saveUserGemData } from '../services/userService';
+import { saveUserGemData, addTestData } from '../services/userService';
 import { useGem } from '../context/GemContext';
 import { useState } from 'react';
 import { Button, Form, Input, Card } from 'antd';
@@ -109,6 +109,25 @@ function DataFetch() {
       
       {/* 抓取新数据的部分 */}
       <FetchNewData />
+      
+      {/* 测试数据按钮 */}
+      <Card title="测试功能" style={{ marginTop: '20px' }}>
+        <Button onClick={async () => {
+          try {
+            const success = await addTestData();
+            if (success) {
+              message.success('测试数据添加成功！');
+              // 刷新显示的数据
+              const newData = await getUserGemData();
+              setGemData(newData);
+            }
+          } catch (error) {
+            message.error('添加测试数据失败：' + error.message);
+          }
+        }}>
+          添加测试数据
+        </Button>
+      </Card>
     </div>
   );
 }

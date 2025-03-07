@@ -14,7 +14,9 @@ export async function getUserGemData() {
     });
     
     if (!response.ok) {
-      throw new Error('获取数据失败');
+      const errorText = await response.text();
+      console.error('服务器响应错误:', response.status, errorText);
+      throw new Error(`获取数据失败: ${response.status}`);
     }
     
     const result = await response.json();
@@ -26,11 +28,17 @@ export async function getUserGemData() {
     }
     
     // 解析存储的 JSON 数据
-    const parsedData = result.data ? JSON.parse(result.data) : null;
-    console.log('解析后的数据:', parsedData);
-    return parsedData;
+    try {
+      const parsedData = result.data ? JSON.parse(result.data) : null;
+      console.log('解析后的数据:', parsedData);
+      return parsedData;
+    } catch (parseError) {
+      console.error('JSON解析失败:', parseError);
+      return null;
+    }
   } catch (error) {
     console.error('获取宝石数据失败:', error);
+    message.error('获取数据失败: ' + error.message);
     return null;
   }
 }
@@ -38,6 +46,7 @@ export async function getUserGemData() {
 // 保存用户宝石数据
 export async function saveUserGemData(userId, gemData) {
   try {
+    console.log('开始保存宝石数据...', gemData);
     const response = await fetch(`${API_BASE_URL}/api/gems/save`, {
       method: 'POST',
       headers: {
@@ -47,15 +56,19 @@ export async function saveUserGemData(userId, gemData) {
     });
     
     if (!response.ok) {
-      throw new Error('保存数据失败');
+      const errorText = await response.text();
+      console.error('服务器响应错误:', response.status, errorText);
+      throw new Error(`保存数据失败: ${response.status}`);
     }
     
     const result = await response.json();
+    console.log('保存结果:', result);
+    
     if (result.success) {
       message.success('数据保存成功');
       return true;
     } else {
-      throw new Error('保存失败');
+      throw new Error('保存失败: ' + (result.error || '未知错误'));
     }
   } catch (error) {
     console.error('保存宝石数据失败:', error);
